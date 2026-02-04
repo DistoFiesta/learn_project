@@ -16,8 +16,9 @@
 - Текстовый редактор (VS Code, Sublime Text, Notepad++)
 - Браузер (Chrome, Firefox, Edge)
 
-###2. Установка и запуск
-####Шаг 1: Клонирование репозитория
+### 2. Установка и запуск
+
+#### Шаг 1: Клонирование репозитория
 ```bash
-git clone https://github.com/ваш-логин/lab01.git
-cd lab01```
+git clone https://github.com/DistoFiesta/learn_project.git
+cd lab01
