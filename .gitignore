@@ -7,5 +7,6 @@ venv/
 env/
 .env
 .venv/
+.idea
 
 Thumbs.db
