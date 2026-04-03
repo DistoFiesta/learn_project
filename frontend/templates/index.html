@@ -2,9 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+    <title>Лабораторная работа 2</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='static.css')}}">
 
+</head>
+
+<body>
+    <div class="container">
+        <header class="hero">
+            <h1>Лабораторная работа 2</h1>
+            <p>Frontend-сервис получил данные от backend API</p>
+        </header>
+
+        <section class="card">
+            <h2>Статус API</h2>
+            <p><strong>Статус:</strong> {{ status_data.status}}</p>
+            <p><strong>Сообщение:</strong> {{status_data.message}}</p>
+            <p><strong>Сервис</strong></p>
+        </section>
+    </div>
 </body>
 </html>
