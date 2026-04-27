@@ -1,10 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "index.html" %}
 
-</body>
-</html>
+{% block content %}
+<h2 class="mb-4">Каталог товаров</h2>
+
+<div class="row">
+    {% for product in products %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Цена: {{ product.price }} руб.</h6>
+                <p class="card-text">{{ product.description }}</p>
+                <p class="card-text"><small class="text-muted">На складе: {{ product.quantity }} шт.</small></p>
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <a href="/edit/{{ product.id }}" class="btn btn-outline-primary btn-sm">Редактировать</a>
+                <a href="/delete/{{ product.id }}" class="btn btn-outline-danger btn-sm">Удалить</a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-warning">Товаров пока нет. Самое время добавить первый!</div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
