@@ -6,6 +6,7 @@ class ProductBase(BaseModel):
     name: str
     description: Optional[str] = None
     price: float
+    old_price: Optional[float] = None
     quantity: int
 
 # Схема для создания товара (использует те же поля, что и базовая)

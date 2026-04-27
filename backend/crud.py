@@ -47,9 +47,9 @@ def create_product(product: ProductCreate):
 
     # SQL: Вставь в таблицу products в такие-то колонки вот такие-то значения
     cursor.execute('''
-                   INSERT INTO products (name, description, price, quantity)
-                   VALUES (?, ?, ?, ?)
-                   ''', (product.name, product.description, product.price, product.quantity))
+                   INSERT INTO products (name, description, price, old_price, quantity)
+                   VALUES (?, ?, ?, ?, ?)
+                   ''', (product.name, product.description, product.price, product.old_price, product.quantity))
 
     conn.commit()  # Тот самый "Сейв" - сохраняем изменения на диск
     new_id = cursor.lastrowid  # Узнаем, какой ID база присвоила новому товару
@@ -74,6 +74,7 @@ def update_product(product_id: int, product: ProductCreate):
                    SET name        = ?,
                        description = ?,
                        price       = ?,
+                       old_price   = ?,
                        quantity    = ?
                    WHERE id = ?
                    ''', (product.name, product.description, product.price, product.quantity, product_id))

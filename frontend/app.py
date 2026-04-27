@@ -19,11 +19,12 @@ def index():
 def add_product():
     """Страница добавления товара."""
     if request.method == "POST":
-        # Собираем данные из HTML-формы
+        old_price_val = request.form.get("old_price")
         data = {
             "name": request.form["name"],
             "description": request.form["description"],
             "price": float(request.form["price"]),
+            "old_price": float(old_price_val) if old_price_val else None,  # Забираем старую цену
             "quantity": int(request.form["quantity"])
         }
         # Отправляем POST-запрос на бэкенд (как ты делал в Swagger)
@@ -38,10 +39,12 @@ def add_product():
 def edit_product(product_id):
     """Страница редактирования товара."""
     if request.method == "POST":
+        old_price_val = request.form.get("old_price")
         data = {
             "name": request.form["name"],
             "description": request.form["description"],
             "price": float(request.form["price"]),
+            "old_price": float(old_price_val) if old_price_val else None,  # Забираем старую цену
             "quantity": int(request.form["quantity"])
         }
         # Отправляем PUT-запрос на бэкенд для обновления
