@@ -8,5 +8,6 @@ env/
 .env
 .venv/
 .idea
+shop.db
 
 Thumbs.db
