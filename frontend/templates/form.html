@@ -1,38 +1,100 @@
 {% extends "index.html" %}
-
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-white">
-                <h4 class="mb-0">{% if product %}Редактировать товар{% else %}Новый товар{% endif %}</h4>
-            </div>
-            <div class="card-body">
+        <div class="card shadow rounded-4 border-0">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-4">{% if product %}Правка товара{% else %}Новый товар{% endif %}</h4>
                 <form method="POST">
                     <div class="mb-3">
                         <label class="form-label">Название</label>
                         <input type="text" name="name" class="form-control" value="{{ product.name if product else '' }}" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Описание</label>
-                        <textarea name="description" class="form-control" rows="3">{{ product.description if product else '' }}</textarea>
+                        <textarea name="description" class="form-control" rows="3" required>{{ product.description if product else '' }}</textarea>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Обычная цена (со скидкой)</label>
-                        <input type="number" step="0.01" name="price" class="form-control" value="{{ product.price if product else '' }}" required>
+
+                    <div class="row align-items-end mb-2">
+                        <div class="col-5">
+                            <label class="form-label">Цена (базовая)</label>
+                            <input type="number" step="0.01" name="price" id="basePrice" class="form-control"
+                                   value="{{ (product.old_price if product and product.old_price else product.price) if product else '' }}"
+                                   required oninput="calculateFinalPrice()">
+                        </div>
+                        <div class="col-7">
+                            <div class="form-check mb-2">
+                                <input type="checkbox" name="has_discount" class="form-check-input" id="discCheck" {% if product and product.old_price %}checked{% endif %} onchange="toggleDiscount()">
+                                <label class="form-check-label" for="discCheck">Сделать скидку</label>
+                            </div>
+
+                            <div class="input-group input-group-sm" id="discountWrapper" style="{% if not (product and product.old_price) %}display: none;{% else %}display: flex;{% endif %}">
+                                <input type="range" class="form-range w-50 px-2 align-self-center" min="1" max="99" id="discRange"
+                                       oninput="discNum.value = this.value; calculateFinalPrice();"
+                                       value="{{ (((product.old_price - product.price) / product.old_price * 100) | round | int) if product and product.old_price else '15' }}">
+
+                                <input type="number" name="discount_percent" id="discNum" class="form-control" placeholder="%" min="1" max="99"
+                                       oninput="discRange.value = this.value; calculateFinalPrice();"
+                                       value="{{ (((product.old_price - product.price) / product.old_price * 100) | round | int) if product and product.old_price else '15' }}">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Старая цена (зачеркнутая, необязательно)</label>
-                        <input type="number" step="0.01" name="old_price" class="form-control" value="{{ product.old_price if product and product.old_price else '' }}">
+
+                    <div class="alert alert-success py-2 mb-3" id="finalPriceAlert" style="display: none;">
+                        Итоговая цена: <strong id="finalPriceValue">0</strong> ₽
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Количество на складе</label>
-                        <input type="number" name="quantity" class="form-control" value="{{ product.quantity if product else '0' }}" required>
+                        <input type="number" name="quantity" class="form-control" value="{{ product.quantity if product else '' }}"
+                               min="{% if not product %}1{% else %}0{% endif %}" required
+                               oninvalid="this.setCustomValidity('{% if not product %}Нужно добавить хотя бы 1 шт!{% else %}Меньше нуля нельзя!{% endif %}')"
+                               oninput="this.setCustomValidity('')">
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Сохранить</button>
+
+                    <div class="mb-3">
+                        <label class="form-label">Картинки (ссылки по одной в строке)</label>
+                        <textarea name="image_urls" class="form-control" rows="3">{% if product %}{{ '\n'.join(product.image_urls) }}{% endif %}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 mt-3">Сохранить</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    function toggleDiscount() {
+        const wrapper = document.getElementById('discountWrapper');
+        const isChecked = document.getElementById('discCheck').checked;
+        wrapper.style.display = isChecked ? 'flex' : 'none';
+        calculateFinalPrice(); // Пересчитываем сразу при включении/выключении
+    }
+
+    function calculateFinalPrice() {
+        // Берем базовую цену. Если пусто - считаем за 0
+        const basePrice = parseFloat(document.getElementById('basePrice').value) || 0;
+        const isChecked = document.getElementById('discCheck').checked;
+        const alertBox = document.getElementById('finalPriceAlert');
+
+        if (isChecked && basePrice > 0) {
+            // Если скидка включена, считаем и показываем плашку
+            const pct = parseFloat(document.getElementById('discNum').value) || 0;
+            const final = basePrice * (1 - pct / 100);
+
+            // toFixed(2) оставляет 2 знака после запятой
+            document.getElementById('finalPriceValue').innerText = final.toFixed(2);
+            alertBox.style.display = 'block';
+        } else {
+            // Если скидки нет, прячем плашку
+            alertBox.style.display = 'none';
+        }
+    }
+
+    // Запускаем расчет один раз при загрузке страницы (полезно при редактировании)
+    document.addEventListener("DOMContentLoaded", calculateFinalPrice);
+</script>
 {% endblock %}

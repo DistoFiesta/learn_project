@@ -1,39 +1,122 @@
 {% extends "index.html" %}
-
 {% block content %}
-<h2 class="mb-4">Каталог товаров</h2>
+<form action="/delete-bulk" method="POST">
 
-<div class="row">
-    {% for product in products %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-            <div class="card-body">
-                <h5 class="card-title">{{ product.name }}</h5>
+    {% if products %}
 
-                <div class="mb-3 mt-2">
+        <div class="d-flex align-items-center mb-4 gap-3">
+            <h2 class="mb-0">Каталог товаров</h2>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm rounded-circle shadow-sm" onclick="toggleBulkDelete()" title="Режим удаления" style="width: 36px; height: 36px;">
+                🗑️
+            </button>
+
+            <button type="submit" id="bulkSubmitBtn" class="btn btn-danger rounded-pill d-none shadow-sm">Удалить выбранные</button>
+        </div>
+
+        <div class="row">
+            {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm position-relative border-0 rounded-4 overflow-hidden">
+
+                    <div class="position-absolute top-0 start-0 m-3 z-3 delete-checkbox d-none">
+                        <div class="form-check m-0 p-0">
+                            <input type="checkbox" name="selected_ids" value="{{ product.id }}" class="form-check-input m-0 border-secondary shadow-sm" style="transform: scale(1.8); cursor: pointer;">
+                        </div>
+                    </div>
+
                     {% if product.old_price and product.old_price > product.price %}
                         {% set discount = ((product.old_price - product.price) / product.old_price * 100) | round | int %}
-                        <span class="badge bg-danger rounded-pill mb-1">-{{ discount }}%</span><br>
-                        <span class="text-muted text-decoration-line-through small">{{ product.old_price }} руб.</span>
-                        <h5 class="text-danger fw-bold mb-0">{{ product.price }} руб.</h5>
-                    {% else %}
-                        <h5 class="fw-bold mb-0 mt-4">{{ product.price }} руб.</h5>
+                        <span class="badge bg-danger position-absolute top-0 end-0 m-3 z-3 fs-6 rounded-pill shadow-sm">-{{ discount }}%</span>
                     {% endif %}
-                </div>
 
-                <p class="card-text">{{ product.description }}</p>
-                <p class="card-text"><small class="text-muted">На складе: {{ product.quantity }} шт.</small></p>
+                    {% if product.image_urls and product.image_urls|length > 0 %}
+                    <div id="car-{{ product.id }}" class="carousel slide">
+
+                        {% if product.image_urls|length > 1 %}
+                        <div class="carousel-indicators">
+                            {% for img in product.image_urls %}
+                            <button type="button" data-bs-target="#car-{{ product.id }}" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}"></button>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="carousel-inner bg-light">
+                            {% for img in product.image_urls %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <img src="{{ img }}" class="d-block w-100" style="height:250px; object-fit:cover;">
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% if product.image_urls|length > 1 %}
+                        <button class="carousel-control-prev" type="button" data-bs-target="#car-{{ product.id }}" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Предыдущая</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#car-{{ product.id }}" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Следующая</span>
+                        </button>
+                        {% endif %}
+
+                    </div>
+                    {% else %}
+                    <div class="card-img-top bg-secondary bg-opacity-10 d-flex flex-column align-items-center justify-content-center rounded-top-4" style="height: 250px;">
+                        <span class="fs-1">📷</span>
+                        <span class="text-muted fw-medium mt-2">Фото отсутствует</span>
+                    </div>
+                    {% endif %}
+
+                    <div class="card-body">
+                        <h5 class="fw-bold">{{ product.name }}</h5>
+                        <div class="mb-2">
+                            {% if product.old_price %}
+                                <span class="text-muted text-decoration-line-through small">{{ product.old_price }} ₽</span>
+                                <h5 class="text-danger fw-bold">{{ product.price }} ₽</h5>
+                            {% else %}
+                                <h5 class="fw-bold">{{ product.price }} ₽</h5>
+                            {% endif %}
+                        </div>
+
+                        <p class="text-muted small">{{ product.description }}</p>
+
+                        <p class="fw-medium {% if product.quantity == 0 %}text-danger{% else %}text-success{% endif %}">
+                            {% if product.quantity == 0 %}
+                                ⚠️ Товара на складе нету
+                            {% else %}
+                                📦 На складе: {{ product.quantity }} шт.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <div class="card-footer bg-transparent border-0 pb-3">
+                        <a href="/edit/{{ product.id }}" class="btn btn-outline-primary btn-sm">Редакт.</a>
+                        <a href="/delete-single/{{ product.id }}" class="btn btn-outline-danger btn-sm">Удалить</a>
+                    </div>
+                </div>
             </div>
-            <div class="card-footer bg-transparent border-top-0">
-                <a href="/edit/{{ product.id }}" class="btn btn-outline-primary btn-sm">Редактировать</a>
-                <a href="/delete/{{ product.id }}" class="btn btn-outline-danger btn-sm">Удалить</a>
-            </div>
+            {% endfor %}
         </div>
-    </div>
+
     {% else %}
-    <div class="col-12">
-        <div class="alert alert-warning">Товаров пока нет.</div>
-    </div>
-    {% endfor %}
-</div>
+
+        <div class="d-flex flex-column align-items-center justify-content-center py-5 mt-5 text-center">
+            <div class="display-1 text-muted mb-3 opacity-50">📦</div>
+            <h3 class="text-muted fw-bold">Товаров пока нету</h3>
+            <p class="text-secondary mb-4">Самое время пополнить ассортимент магазина!</p>
+            <a href="/add" class="btn btn-primary btn-lg rounded-pill shadow-sm px-5 py-2">Добавить первый товар</a>
+        </div>
+
+    {% endif %}
+</form>
+
+<script>
+    function toggleBulkDelete() {
+        document.querySelectorAll('.delete-checkbox').forEach(el => el.classList.toggle('d-none'));
+        document.getElementById('bulkSubmitBtn').classList.toggle('d-none');
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
